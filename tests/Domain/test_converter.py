@@ -42,10 +42,13 @@ def test_tc_fr_02_convert_all_units_excluding_source():
     assert "feet" in target_units
     assert "yard" in target_units
 
+    from src.config_loader import default_config_path, load_units
+
+    units = load_units(default_config_path())
     feet = next(r for r in results if r.unit == "feet")
     yard = next(r for r in results if r.unit == "yard")
-    assert abs(feet.value - (2.5 * 3.28084)) < 1e-4
-    assert abs(yard.value - (2.5 * 1.09361)) < 1e-4
+    assert abs(feet.value - (2.5 * units["feet"])) < 1e-4
+    assert abs(yard.value - (2.5 * units["yard"])) < 1e-4
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +58,7 @@ def test_tc_fr_02_convert_all_units_excluding_source():
 # Layer   : entity / control
 # P       : P0
 # Given   : meter 2.5
-# Then    : "8.2 feet", "2.7 yard" (round half up, 소수 1자리)
+# Then    : "7.5 feet", "2.5 yard" (fixture 비율, round half up, 소수 1자리)
 # ---------------------------------------------------------------------------
 @pytest.mark.req("FR-03")
 @pytest.mark.track("Logic")
@@ -66,14 +69,14 @@ def test_d_fr03_round_half_up_one_decimal():
     # Arrange
     source_unit = "meter"
     value = 2.5
-    expected_lines = ["8.2 feet", "2.7 yard"]
+    expected_lines = ["7.5 feet", "2.5 yard"]
 
     # Act
     lines = format_conversions(source_unit, value)
 
     # Assert
-    assert any("8.2 feet" in line for line in lines)
-    assert any("2.7 yard" in line for line in lines)
+    assert any("7.5 feet" in line for line in lines)
+    assert any("2.5 yard" in line for line in lines)
     assert lines == expected_lines
 
 
@@ -83,7 +86,7 @@ def test_d_fr03_round_half_up_one_decimal():
 # Test ID : D-FR-04 / TC-FR-04
 # Layer   : entity / control
 # P       : P0
-# Given   : feet 3.28084
+# Given   : feet 3.0 (config: 1 meter)
 # Then    : yard ≈ 1.0 (meter 경유 파생 변환)
 # ---------------------------------------------------------------------------
 @pytest.mark.req("FR-04")
@@ -91,13 +94,14 @@ def test_d_fr03_round_half_up_one_decimal():
 def test_d_fr04_derived_conversion_via_meter():
     """D-FR-04 / TC-FR-04: meter 기준 파생 변환 — FR-04 (Logic Track)"""
     from src.converter import Converter
-    from src.entity.constants import FEET_PER_METER, YARD_PER_METER
+    from src.config_loader import default_config_path, load_units
     from src.entity.registry import UnitRegistry
 
-    # Arrange — 3.28084 feet ≡ 1 meter → yard via meter hub
+    units = load_units(default_config_path())
+    # Arrange — 3 feet ≡ 1 meter → yard via meter hub (tests/fixtures/units.json)
     source_unit = "feet"
-    value = FEET_PER_METER
-    expected_yard = YARD_PER_METER
+    value = units["feet"]
+    expected_yard = units["yard"]
     tolerance = 1e-4
 
     # Act
