@@ -1,5 +1,5 @@
 """
-tests/test_converter.py — Track B (Domain) 테스트
+tests/Domain/test_converter.py — Track B (Domain) 테스트
 
 PRD 추적
 --------
@@ -8,7 +8,7 @@ PRD 추적
 - §3.2   : FR-02~FR-05 (Domain 변환·반올림·파생·단위 표기)
 - §8.2   : TC-FR-02, TC-FR-03, TC-FR-04, TC-FR-05
 - Dual-Track : Logic (PRD Track B — Domain)
-- Test File : tests/test_converter.py
+- Test File : tests/Domain/test_converter.py
 """
 
 import pytest

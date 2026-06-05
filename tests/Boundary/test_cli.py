@@ -1,5 +1,5 @@
 """
-tests/test_cli.py — Track A (Boundary) 테스트
+tests/Boundary/test_cli.py — Track A (Boundary) 테스트
 
 PRD 추적
 --------
@@ -8,7 +8,7 @@ PRD 추적
 - §3.3   : FR-01, FR-06 ~ FR-12 입력 파싱·검증
 - §8.2   : TC-FR-01, TC-FR-06 ~ TC-FR-12
 - Layer  : boundary
-- Test File : tests/test_cli.py
+- Test File : tests/Boundary/test_cli.py
 """
 
 import pytest
