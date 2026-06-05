@@ -6,15 +6,18 @@ class ValidationError(ValueError):
 
 
 def validate_input(input_str: str) -> None:
-    """unit:value 형식·숫자 검증 (FR-06, FR-07)."""
+    """unit:value 형식·숫자·음수 검증 (FR-06, FR-07, FR-08)."""
     if ":" not in input_str:
         raise ValidationError(_FORMAT_ERROR)
 
     _, value_str = input_str.split(":", 1)
     try:
-        float(value_str.strip())
+        value = float(value_str.strip())
     except ValueError:
         raise ValidationError(f"Invalid number: {value_str.strip()}") from None
+
+    if value < 0:
+        raise ValidationError(f"Negative values are not allowed: {value}")
 
 
 __all__ = ["ValidationError", "validate_input"]

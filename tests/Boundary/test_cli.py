@@ -105,14 +105,10 @@ def test_u_fr08_negative_value_rejected():
     expected_fragment = "Negative values are not allowed"
 
     # Act (GREEN)
-    # from src.validator import validate_input
-    # with pytest.raises(ValidationError, match=expected_fragment):
-    #     validate_input(input_str)
+    from src.validator import ValidationError, validate_input
 
-    pytest.fail(
-        f"RED: FR-08 GREEN 미구현 — Given {input_str!r}, "
-        f"Then {expected_fragment!r}"
-    )
+    with pytest.raises(ValidationError, match=re.escape(expected_fragment)):
+        validate_input(input_str)
 
 
 # ---------------------------------------------------------------------------
