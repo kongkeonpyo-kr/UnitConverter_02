@@ -1,0 +1,11 @@
+[
+  {"id": "meter_2_5", "input": "meter:2.5"},
+  {"id": "meter_no_colon", "input": "meter"},
+  {"id": "meter_abc", "input": "meter:abc"},
+  {"id": "meter_negative", "input": "meter:-1"},
+  {"id": "cubit_1", "input": "cubit:1"},
+  {"id": "empty_unit", "input": ":2.5"},
+  {"id": "empty_value", "input": "meter:"},
+  {"id": "whitespace_trim", "input": " meter : 2.5 "},
+  {"id": "case_sensitive", "input": "Meter:2.5"}
+]

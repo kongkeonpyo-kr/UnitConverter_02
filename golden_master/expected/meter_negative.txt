@@ -1,0 +1,1 @@
+Negative values are not allowed: -1.0

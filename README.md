@@ -6,10 +6,10 @@
 - 새로운 단위를 추가할 때 기존 코드의 변경이 최소화되도록 설계한다.
 - 각 단위 변환 로직은 테스트 코드로 검증한다.
 
-### ToDo — TDD 진행 현황 (PRD v1.2 기준)
+### ToDo — TDD 진행 현황 (PRD v1.3 기준)
 
 > 상세 요구·추적표: [PRD/unit-converter-prd.md](PRD/unit-converter-prd.md) §8  
-> 브랜치: `GREEN` | PR7 (Boundary FR-06~12 · P0 FR **12/12 GREEN**)
+> 브랜치: **`REFACTORING`** | FR-12 요구 변경(v1.3): 단위명 **대소문자 무시** — TC RED 4건
 
 #### 완료 기준
 
@@ -24,6 +24,7 @@
 |-------|------------|---------|---------|------|
 | **RED** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | P0 FR RED 전체 완료 |
 | **GREEN** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | PR7 완료 (P0 FR 전체) |
+| **REFACTORING** | — | — | — | FR-12 재정의(v1.3) + Golden Master (진행 중) |
 
 #### GREEN PR 마일스톤
 
@@ -34,7 +35,8 @@
 | **PR3** | `f78949a` | `src/entity/` SSOT, re-export shim, import 정리 | ✅ |
 | **PR4** | — | FR-04 TC GREEN (Domain, Report 05) | ✅ |
 | **PR5** | `1b83ce0` | FR-03 Formatter + FR-03~05 Domain GREEN | ✅ |
-| **PR7** | `359e161` | FR-06~12 Validator + FR-11 Parser trim | ✅ |
+| **PR7** | `97da13d` | FR-06~12 Validator + FR-11 Parser trim | ✅ |
+| **REFACTORING** | — | Golden Master, `cli`↔`validator` 연동 등 | 🟡 |
 | **PR8** | — | NFR P0 TC + 구현 | ⬜ |
 | **PR9** | — | EXT P1 (설정·동적등록·출력포맷) | ⬜ |
 
@@ -53,7 +55,7 @@
 | FR-09 | TC-FR-09 | 미지 단위 거부 | ✅ | ✅ | PR7 |
 | FR-10 | TC-FR-10 | 빈 unit/value | ✅ | ✅ | PR7 |
 | FR-11 | TC-FR-11 | 공백 trim | ✅ | ✅ | PR7 |
-| FR-12 | TC-FR-12 | 대소문자 거부 | ✅ | ✅ | PR7 |
+| FR-12 | TC-FR-12 | 대소문자 무시 (`Meter`/`METER`) | ✅ | ⬜ | REFACTORING |
 
 **Track B — Domain** (`tests/Domain/test_converter.py`)
 
@@ -113,16 +115,24 @@ python -m pytest tests/Boundary/test_cli.py::test_u_fr08_negative_value_rejected
 python -m pytest tests/Boundary/test_cli.py::test_u_fr09_unknown_unit -v
 python -m pytest tests/Boundary/test_cli.py::test_u_fr10_empty_unit_or_value -v
 python -m pytest tests/Boundary/test_cli.py::test_u_fr11_whitespace_trim -v
-python -m pytest tests/Boundary/test_cli.py::test_u_fr12_case_sensitive_unit_rejected -v
+python -m pytest tests/Boundary/test_cli.py::test_u_fr12_case_insensitive_unit_accepted -v
 
 # GREEN 통과 TC — Domain
 python -m pytest tests/Domain/test_converter.py -v
 
 # Boundary 전체 GREEN
 python -m pytest tests/Boundary/test_cli.py -v
+
+# Golden Master (cli.run stdout 스냅샷)
+python -m pytest tests/GoldenMaster/test_golden_master.py -v
+
+# Golden Master 기준 파일 재생성 (의도적 변경 후)
+python scripts/generate_golden_master.py
 ```
 
-**현재 TC 결과:** 13 collected — **13 passed** (P0 FR 전체 GREEN)
+**현재 TC 결과:** 25 collected — **21 passed**, **4 failed** (FR-12 RED ×4; Golden Master 9건 포함)
+
+> Golden Master 기준 출력: `golden_master/expected/*.txt` (`cli.run()` REFACTORING 전 스냅샷)
 
 ---
 
@@ -140,6 +150,15 @@ python -m pytest tests/Boundary/test_cli.py -v
 | `src/formatter.py` | Domain | FR-03, FR-05 | PR5 | ✅ |
 | `src/validator.py` | Boundary | FR-06~12 | PR7 | ✅ |
 | `config/units.json` | — | EXT-01 | PR9 | ⬜ |
+
+#### Golden Master (`REFACTORING`)
+
+| 경로 | 역할 |
+|------|------|
+| `golden_master/cases.json` | 스냅샷 입력 케이스 (9건) |
+| `golden_master/expected/*.txt` | `cli.run()` 기준 stdout |
+| `scripts/generate_golden_master.py` | expected 재생성 |
+| `tests/GoldenMaster/test_golden_master.py` | 회귀 비교 TC |
 
 ---
 
