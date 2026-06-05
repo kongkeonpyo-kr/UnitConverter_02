@@ -9,7 +9,7 @@ class ValidationError(ValueError):
 
 
 def validate_input(input_str: str) -> None:
-    """unit:value 형식·숫자·음수·단위 검증 (FR-06~10)."""
+    """unit:value 형식·숫자·음수·단위 검증 (FR-06~12)."""
     if ":" not in input_str:
         raise ValidationError(_FORMAT_ERROR)
 
