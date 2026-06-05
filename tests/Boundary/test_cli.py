@@ -22,8 +22,10 @@ import pytest
 # Then    : unit="meter", value=2.5
 # ---------------------------------------------------------------------------
 @pytest.mark.req("FR-01")
+@pytest.mark.track("UI")
 def test_tc_fr_01_parse_meter_2_5():
     """TC-FR-01: meter:2.5 파싱 — FR-01 입력 파싱 (Track A)"""
+    from src.parsed_input import ParsedInput
     from src.parser import parse_input
 
     # Given
@@ -33,6 +35,7 @@ def test_tc_fr_01_parse_meter_2_5():
     result = parse_input(input_str)
 
     # Then
+    assert isinstance(result, ParsedInput)
     assert result.unit == "meter"
     assert result.value == 2.5
 
@@ -54,7 +57,7 @@ def test_u_fr06_invalid_format_missing_colon():
     expected_msg = "Invalid format. Use unit:value (ex: meter:2.5)"
 
     # Act (GREEN)
-    # from boundary.validator import validate_input
+    # from src.validator import validate_input
     # with pytest.raises(ValidationError, match=expected_msg):
     #     validate_input(input_str)
 
@@ -78,7 +81,7 @@ def test_u_fr07_invalid_number():
     expected_msg = "Invalid number: abc"
 
     # Act (GREEN)
-    # from boundary.validator import validate_input
+    # from src.validator import validate_input
     # with pytest.raises(ValidationError, match=expected_msg):
     #     validate_input(input_str)
 
@@ -102,7 +105,7 @@ def test_u_fr08_negative_value_rejected():
     expected_fragment = "Negative values are not allowed"
 
     # Act (GREEN)
-    # from boundary.validator import validate_input
+    # from src.validator import validate_input
     # with pytest.raises(ValidationError, match=expected_fragment):
     #     validate_input(input_str)
 
@@ -129,7 +132,7 @@ def test_u_fr09_unknown_unit():
     expected_msg = "Unknown unit: cubit"
 
     # Act (GREEN)
-    # from boundary.validator import validate_input
+    # from src.validator import validate_input
     # with pytest.raises(ValidationError, match=expected_msg):
     #     validate_input(input_str)
 
@@ -153,7 +156,7 @@ def test_u_fr10_empty_unit_or_value(input_str):
     expected_fragment = "Unit and value must not be empty"
 
     # Act (GREEN)
-    # from boundary.validator import validate_input
+    # from src.validator import validate_input
     # with pytest.raises(ValidationError, match=expected_fragment):
     #     validate_input(input_str)
 
@@ -181,7 +184,7 @@ def test_u_fr11_whitespace_trim():
     expected_value = 2.5
 
     # Act (GREEN)
-    # from boundary.parser import parse_input
+    # from src.parser import parse_input
     # result = parse_input(input_str)
 
     # Assert (GREEN 시 활성화)
@@ -211,7 +214,7 @@ def test_u_fr12_case_sensitive_unit_rejected():
     expected_msg = "Unknown unit: Meter"
 
     # Act (GREEN)
-    # from boundary.validator import validate_input
+    # from src.validator import validate_input
     # with pytest.raises(ValidationError, match=expected_msg):
     #     validate_input(input_str)
 
