@@ -2,9 +2,9 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | 1.3 |
+| 문서 버전 | 1.4 |
 | 작성일 | 2026-06-05 |
-| 변경 이력 | v1.3 — FR-12: 단위명 **대소문자 무시** (v1.2 소문자만 → 폐기) |
+| 변경 이력 | v1.4 — EXT-07: `--format table` 박스 테이블 출력 명세 · v1.3 — FR-12: 단위명 **대소문자 무시** |
 | 기준 문서 | [README.md](../README.md) |
 | 레거시 코드 | [UnitConverter.py](../UnitConverter.py) |
 | 상태 | Draft |
@@ -207,9 +207,31 @@ config/
 
 | ID | 포맷 | 설명 | 선택 방법 |
 |----|------|------|-----------|
-| EXT-07 | **table** (기본) | README 예시와 동일한 텍스트 줄 출력 | `--format table` 또는 미지정 |
+| EXT-07 | **table** | 등록된 모든 단위를 **박스 드로잉 표**로 출력 (`unit` / `input` / `result` 열) | `--format table` |
 | EXT-08 | **json** | `[{"from": "...", "to": "...", "value": ...}, ...]` | `--format json` |
 | EXT-09 | **csv** | `from_unit,from_value,to_unit,to_value` 헤더 + 행 | `--format csv` |
+
+**기본 포맷 (미지정):** `line` — `2.5 meter = 8.2 feet` 형식의 줄 단위 출력 (기존 동작).
+
+#### EXT-07 table 출력 규칙
+
+- **열:** `unit` (단위명), `input` (입력값, 모든 행 동일), `result` (해당 단위로 환산한 값)
+- **행:** Registry에 등록된 **모든** 단위 (입력 단위 포함)
+- **input 열:** 파싱된 숫자값 — 최대 소수 4자리 round half up, 불필요한 후행 0 제거
+- **result 열:** 입력 단위 행은 `input`과 동일; 그 외 단위는 소수 **4자리 고정** round half up
+- **테두리:** Unicode 박스 드로잉 문자 (`┌─┬┐`, `│`, `└─┴┘` 등)
+
+**예시** (`python UnitConverter.py meter:2.5 --format table`, 내장 기본 비율):
+
+```
+┌────────┬─────────┬─────────┐
+│ unit   │ input   │ result  │
+├────────┼─────────┼─────────┤
+│ meter  │ 2.5     │ 2.5     │
+│ feet   │ 2.5     │ 8.2021  │
+│ yard   │ 2.5     │ 2.7340  │
+└────────┴─────────┴─────────┘
+```
 
 ---
 
@@ -370,7 +392,7 @@ PRD 요구사항(FR / NFR / EXT)과 테스트 케이스(Test ID)를 **1:1**로 �
 | EXT-04 | TC-EXT-04 | `--config` 옵션 | `custom_units.json` | 지정 파일 비율 로드 | P1 | `tests/test_config_loader.py` |
 | EXT-05 | TC-EXT-05 | 동적 등록 | `--register "cubit:0.4572"` | Registry에 cubit 등록 | P1 | `tests/test_registry.py` |
 | EXT-06 | TC-EXT-06 | 등록 후 즉시 변환 | cubit 등록 후 `cubit:1` | meter 등 다른 단위로 변환 가능 | P1 | `tests/test_registry.py` |
-| EXT-07 | TC-EXT-07 | table 포맷 | `--format table`, `meter:2.5` | 텍스트 줄 출력 | P1 | `tests/test_cli.py` |
+| EXT-07 | TC-EXT-07 | table 포맷 | `--format table`, `meter:2.5` | 박스 테이블 (unit/input/result) | P1 | `tests/Boundary/test_cli.py` |
 | EXT-08 | TC-EXT-08 | json 포맷 | `--format json` | 유효 JSON 배열 | P1 | `tests/test_cli.py` |
 | EXT-09 | TC-EXT-09 | csv 포맷 | `--format csv` | 헤더 + 행 CSV | P1 | `tests/test_cli.py` |
 

@@ -6,11 +6,15 @@ PRD 추적
 - 문서   : PRD/unit-converter-prd.md
 - Track  : A (Boundary) → Dual-Track: UI
 - §3.3   : FR-01, FR-06 ~ FR-12 입력 파싱·검증
+- §3.7   : EXT-07 ~ EXT-09 출력 포맷
 - §8.2   : TC-FR-01, TC-FR-06 ~ TC-FR-12
+- §8.4   : TC-EXT-07 ~ TC-EXT-09
 - Layer  : boundary
 - Test File : tests/Boundary/test_cli.py
 """
 
+import contextlib
+import io
 import re
 
 import pytest
@@ -214,3 +218,100 @@ def test_u_fr12_case_insensitive_unit_accepted(input_str, expected_unit):
 
     result = parse_input(input_str)
     assert result.unit == expected_unit
+
+
+# ---------------------------------------------------------------------------
+# Req ID  : EXT-07
+# Track   : A (Boundary)
+# Test ID : TC-EXT-07
+# P       : P1
+# Given   : --format table, meter:2.5 (fixture 비율 meter:1, feet:3, yard:1)
+# Then    : unit/input/result 박스 테이블 출력
+# ---------------------------------------------------------------------------
+@pytest.mark.req("EXT-07")
+@pytest.mark.track("UI")
+def test_tc_ext_07_format_table_with_fixture_ratios():
+    """TC-EXT-07: table 포맷 — fixture 비율 기준 박스 테이블 (Track A)"""
+    from src.config_loader import load_unit_registry
+    from src.formatter import format_table
+
+    from pathlib import Path
+
+    fixture_path = Path(__file__).resolve().parents[1] / "fixtures" / "units.json"
+    registry = load_unit_registry(fixture_path)
+
+    expected = "\n".join(
+        [
+            "┌────────┬─────────┬─────────┐",
+            "│ unit   │ input   │ result  │",
+            "├────────┼─────────┼─────────┤",
+            "│ meter  │ 2.5     │ 2.5     │",
+            "│ feet   │ 2.5     │ 7.5000  │",
+            "│ yard   │ 2.5     │ 2.5000  │",
+            "└────────┴─────────┴─────────┘",
+        ]
+    )
+
+    assert format_table("meter", 2.5, registry) == expected
+
+
+@pytest.mark.req("EXT-07")
+@pytest.mark.track("UI")
+def test_tc_ext_07_format_table_prd_builtin_ratios():
+    """TC-EXT-07: table 포맷 — PRD §3.7 내장 비율 예시 (8.2021, 2.7340)"""
+    from src.entity.constants import BASE_UNIT, FEET_PER_METER, YARD_PER_METER
+    from src.entity.registry import UnitRegistry
+    from src.formatter import format_table
+
+    prd_registry = UnitRegistry(
+        {
+            BASE_UNIT: 1.0,
+            "feet": FEET_PER_METER,
+            "yard": YARD_PER_METER,
+        }
+    )
+    expected = "\n".join(
+        [
+            "┌────────┬─────────┬─────────┐",
+            "│ unit   │ input   │ result  │",
+            "├────────┼─────────┼─────────┤",
+            "│ meter  │ 2.5     │ 2.5     │",
+            "│ feet   │ 2.5     │ 8.2021  │",
+            "│ yard   │ 2.5     │ 2.7340  │",
+            "└────────┴─────────┴─────────┘",
+        ]
+    )
+
+    assert format_table("meter", 2.5, prd_registry) == expected
+
+
+@pytest.mark.req("EXT-07")
+@pytest.mark.track("UI")
+def test_tc_ext_07_cli_run_format_table():
+    """TC-EXT-07: cli.run(output_format='table') — stdout 박스 테이블"""
+    from src.cli import run
+    from src.formatter import format_table
+
+    expected = format_table("meter", 2.5) + "\n"
+
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        run("meter:2.5", output_format="table")
+
+    assert buf.getvalue() == expected
+
+
+@pytest.mark.req("EXT-07")
+@pytest.mark.track("UI")
+def test_tc_ext_07_main_argv_format_table():
+    """TC-EXT-07: main(['meter:2.5', '--format', 'table']) — CLI 인자 연동"""
+    from src.cli import main
+    from src.formatter import format_table
+
+    expected = format_table("meter", 2.5) + "\n"
+
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        main(["meter:2.5", "--format", "table"])
+
+    assert buf.getvalue() == expected
