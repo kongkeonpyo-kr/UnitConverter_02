@@ -1,2 +1,1 @@
--1.0 meter = -3.28084 feet
--1.0 meter = -1.09361 yard
+Negative values are not allowed: -1.0
