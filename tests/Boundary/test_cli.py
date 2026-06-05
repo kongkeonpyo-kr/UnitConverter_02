@@ -11,6 +11,8 @@ PRD 추적
 - Test File : tests/Boundary/test_cli.py
 """
 
+import re
+
 import pytest
 
 # ---------------------------------------------------------------------------
@@ -57,11 +59,10 @@ def test_u_fr06_invalid_format_missing_colon():
     expected_msg = "Invalid format. Use unit:value (ex: meter:2.5)"
 
     # Act (GREEN)
-    # from src.validator import validate_input
-    # with pytest.raises(ValidationError, match=expected_msg):
-    #     validate_input(input_str)
+    from src.validator import ValidationError, validate_input
 
-    pytest.fail(f"RED: FR-06 GREEN 미구현 — Given {input_str!r}, Then {expected_msg!r}")
+    with pytest.raises(ValidationError, match=re.escape(expected_msg)):
+        validate_input(input_str)
 
 
 # ---------------------------------------------------------------------------
