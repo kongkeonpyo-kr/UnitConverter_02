@@ -9,7 +9,7 @@
 ### ToDo — TDD 진행 현황 (PRD v1.2 기준)
 
 > 상세 요구·추적표: [PRD/unit-converter-prd.md](PRD/unit-converter-prd.md) §8  
-> 브랜치: `GREEN` | 최종 커밋: `f78949a` (PR3)
+> 브랜치: `GREEN` | PR7 (Validator FR-06~07 GREEN)
 
 #### 완료 기준
 
@@ -23,7 +23,7 @@
 | Phase | P0 FR (12) | NFR (8) | EXT (9) | 비고 |
 |-------|------------|---------|---------|------|
 | **RED** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | P0 FR RED 전체 완료 |
-| **GREEN** | ✅ 2/12 | ⬜ 0/8 | ⬜ 0/9 | PR3까지 완료 (FR-01, FR-02 + 구조) |
+| **GREEN** | ✅ 7/12 | ⬜ 0/8 | ⬜ 0/9 | PR7 (FR-01~07) |
 
 #### GREEN PR 마일스톤
 
@@ -32,10 +32,11 @@
 | **PR1** | `521a4f4` | 레거시 `UnitConverter.py` → `src/` 분리, FR-01·FR-02 GREEN | ✅ |
 | **PR2** | `c4fbfd8` | 루트 `entity/` 삭제 | ✅ |
 | **PR3** | `f78949a` | `src/entity/` SSOT, re-export shim, import 정리 | ✅ |
-| **PR4** | — | FR-03 Formatter (반올림) | ⬜ |
-| **PR5** | — | FR-04~05 Domain, FR-06~12 Validator | ⬜ |
-| **PR6** | — | NFR P0 TC + 구현 | ⬜ |
-| **PR7** | — | EXT P1 (설정·동적등록·출력포맷) | ⬜ |
+| **PR4** | — | FR-04 TC GREEN (Domain, Report 05) | ✅ |
+| **PR5** | `1b83ce0` | FR-03 Formatter + FR-03~05 Domain GREEN | ✅ |
+| **PR7** | `90cb8b3` | FR-06~07 Validator (형식·숫자), FR-08~12 잔여 | 🟡 |
+| **PR8** | — | NFR P0 TC + 구현 | ⬜ |
+| **PR9** | — | EXT P1 (설정·동적등록·출력포맷) | ⬜ |
 
 ---
 
@@ -46,22 +47,22 @@
 | Req ID | Test ID | 요구 | RED | GREEN | PR |
 |--------|---------|------|:---:|:-----:|-----|
 | FR-01 | TC-FR-01 | 입력 파싱 (`meter:2.5`) | ✅ | ✅ | PR1 |
-| FR-06 | TC-FR-06 | 형식 검증 (`:` 필수) | ✅ | ⬜ | PR5 |
-| FR-07 | TC-FR-07 | 숫자 검증 | ✅ | ⬜ | PR5 |
-| FR-08 | TC-FR-08 | 음수 거부 | ✅ | ⬜ | PR5 |
-| FR-09 | TC-FR-09 | 미지 단위 거부 | ✅ | ⬜ | PR5 |
-| FR-10 | TC-FR-10 | 빈 unit/value | ✅ | ⬜ | PR5 |
-| FR-11 | TC-FR-11 | 공백 trim | ✅ | ⬜ | PR5 |
-| FR-12 | TC-FR-12 | 대소문자 거부 | ✅ | ⬜ | PR5 |
+| FR-06 | TC-FR-06 | 형식 검증 (`:` 필수) | ✅ | ✅ | PR7 |
+| FR-07 | TC-FR-07 | 숫자 검증 | ✅ | ✅ | PR7 |
+| FR-08 | TC-FR-08 | 음수 거부 | ✅ | ⬜ | PR7 |
+| FR-09 | TC-FR-09 | 미지 단위 거부 | ✅ | ⬜ | PR7 |
+| FR-10 | TC-FR-10 | 빈 unit/value | ✅ | ⬜ | PR7 |
+| FR-11 | TC-FR-11 | 공백 trim | ✅ | ⬜ | PR7 |
+| FR-12 | TC-FR-12 | 대소문자 거부 | ✅ | ⬜ | PR7 |
 
 **Track B — Domain** (`tests/Domain/test_converter.py`)
 
 | Req ID | Test ID | 요구 | RED | GREEN | PR |
 |--------|---------|------|:---:|:-----:|-----|
 | FR-02 | TC-FR-02 | 전 단위 변환 (소스 제외) | ✅ | ✅ | PR1 |
-| FR-03 | TC-FR-03 | 소수 1자리 반올림 (round half up) | ✅ | ⬜ | PR4 |
-| FR-04 | TC-FR-04 | meter 기준 파생 변환 | ✅ | ⬜ | PR5 |
-| FR-05 | TC-FR-05 | 단위 표기 (단수형) | ✅ | ⬜ | PR5 |
+| FR-03 | TC-FR-03 | 소수 1자리 반올림 (round half up) | ✅ | ✅ | PR5 |
+| FR-04 | TC-FR-04 | meter 기준 파생 변환 | ✅ | ✅ | PR5 |
+| FR-05 | TC-FR-05 | 단위 표기 (단수형) | ✅ | ✅ | PR5 |
 
 ---
 
@@ -69,14 +70,14 @@
 
 | Req ID | Test ID | 요구 | RED | GREEN | PR | Test File |
 |--------|---------|------|:---:|:-----:|-----|-----------|
-| NFR-01 | TC-NFR-01 | OCP (Registry 확장) | ⬜ | ⬜ | PR6 | `tests/test_registry.py` |
+| NFR-01 | TC-NFR-01 | OCP (Registry 확장) | ⬜ | ⬜ | PR8 | `tests/test_registry.py` |
 | NFR-02 | TC-NFR-02 | SRP (모듈 분리) | ⬜ | 🟡 | PR3 | `tests/test_structure.py` |
 | NFR-03 | TC-NFR-03 | 테스트 가능성 (I/O 분리) | ⬜ | 🟡 | PR1 | `tests/Domain/test_converter.py` |
-| NFR-04 | TC-NFR-04 | Python 3.10+ | ⬜ | ⬜ | PR6 | `tests/test_environment.py` |
-| NFR-05 | TC-NFR-05 | 의존성 최소화 | ⬜ | ⬜ | PR7 | `tests/test_environment.py` |
+| NFR-04 | TC-NFR-04 | Python 3.10+ | ⬜ | ⬜ | PR8 | `tests/test_environment.py` |
+| NFR-05 | TC-NFR-05 | 의존성 최소화 | ⬜ | ⬜ | PR9 | `tests/test_environment.py` |
 | NFR-06 | TC-NFR-06 | 변환 정확도 | ⬜ | 🟡 | PR1 | `tests/Domain/test_converter.py` |
-| NFR-07 | TC-NFR-07 | exit code | ⬜ | ⬜ | PR5 | `tests/Boundary/test_cli.py` |
-| NFR-08 | TC-NFR-08 | CLI 실행 | ⬜ | ⬜ | PR5 | `tests/Boundary/test_cli.py` |
+| NFR-07 | TC-NFR-07 | exit code | ⬜ | ⬜ | PR7 | `tests/Boundary/test_cli.py` |
+| NFR-08 | TC-NFR-08 | CLI 실행 | ⬜ | ⬜ | PR7 | `tests/Boundary/test_cli.py` |
 
 > 🟡 = TC 미작성·RED 미완료이나 PR1~PR3 구현으로 **부분 충족** (Registry OCP 구조, Converter 단독 테스트, FR-02 정확도)
 
@@ -86,15 +87,15 @@
 
 | Req ID | Test ID | 요구 | RED | GREEN | PR | Test File |
 |--------|---------|------|:---:|:-----:|-----|-----------|
-| EXT-01 | TC-EXT-01 | 설정 파일 로드 | ⬜ | ⬜ | PR7 | `tests/test_config_loader.py` |
-| EXT-02 | TC-EXT-02 | 설정 누락 기본값 | ⬜ | ⬜ | PR7 | `tests/test_config_loader.py` |
-| EXT-03 | TC-EXT-03 | 설정 파싱 실패 | ⬜ | ⬜ | PR7 | `tests/test_config_loader.py` |
-| EXT-04 | TC-EXT-04 | `--config` 옵션 | ⬜ | ⬜ | PR7 | `tests/test_config_loader.py` |
-| EXT-05 | TC-EXT-05 | 동적 단위 등록 | ⬜ | ⬜ | PR7 | `tests/test_registry.py` |
-| EXT-06 | TC-EXT-06 | 등록 후 즉시 변환 | ⬜ | ⬜ | PR7 | `tests/test_registry.py` |
-| EXT-07 | TC-EXT-07 | table 포맷 출력 | ⬜ | ⬜ | PR7 | `tests/Boundary/test_cli.py` |
-| EXT-08 | TC-EXT-08 | json 포맷 출력 | ⬜ | ⬜ | PR7 | `tests/Boundary/test_cli.py` |
-| EXT-09 | TC-EXT-09 | csv 포맷 출력 | ⬜ | ⬜ | PR7 | `tests/Boundary/test_cli.py` |
+| EXT-01 | TC-EXT-01 | 설정 파일 로드 | ⬜ | ⬜ | PR9 | `tests/test_config_loader.py` |
+| EXT-02 | TC-EXT-02 | 설정 누락 기본값 | ⬜ | ⬜ | PR9 | `tests/test_config_loader.py` |
+| EXT-03 | TC-EXT-03 | 설정 파싱 실패 | ⬜ | ⬜ | PR9 | `tests/test_config_loader.py` |
+| EXT-04 | TC-EXT-04 | `--config` 옵션 | ⬜ | ⬜ | PR9 | `tests/test_config_loader.py` |
+| EXT-05 | TC-EXT-05 | 동적 단위 등록 | ⬜ | ⬜ | PR9 | `tests/test_registry.py` |
+| EXT-06 | TC-EXT-06 | 등록 후 즉시 변환 | ⬜ | ⬜ | PR9 | `tests/test_registry.py` |
+| EXT-07 | TC-EXT-07 | table 포맷 출력 | ⬜ | ⬜ | PR9 | `tests/Boundary/test_cli.py` |
+| EXT-08 | TC-EXT-08 | json 포맷 출력 | ⬜ | ⬜ | PR9 | `tests/Boundary/test_cli.py` |
+| EXT-09 | TC-EXT-09 | csv 포맷 출력 | ⬜ | ⬜ | PR9 | `tests/Boundary/test_cli.py` |
 
 ---
 
@@ -104,12 +105,16 @@
 # 전체
 python -m pytest tests/ -v
 
-# GREEN 통과 TC
+# GREEN 통과 TC — Boundary
 python -m pytest tests/Boundary/test_cli.py::test_tc_fr_01_parse_meter_2_5 -v
-python -m pytest tests/Domain/test_converter.py::test_tc_fr_02_convert_all_units_excluding_source -v
+python -m pytest tests/Boundary/test_cli.py::test_u_fr06_invalid_format_missing_colon -v
+python -m pytest tests/Boundary/test_cli.py::test_u_fr07_invalid_number -v
+
+# GREEN 통과 TC — Domain
+python -m pytest tests/Domain/test_converter.py -v
 ```
 
-**현재 TC 결과:** 13 collected — **2 passed**, 11 failed (RED 스텁)
+**현재 TC 결과:** 13 collected — **7 passed**, 6 failed (FR-08~12 RED)
 
 ---
 
@@ -124,9 +129,9 @@ python -m pytest tests/Domain/test_converter.py::test_tc_fr_02_convert_all_units
 | `src/entity/registry.py` | Entity | NFR-01 | PR1·PR3 | ✅ |
 | `src/entity/constants.py` | Entity | SSOT | PR1·PR3 | ✅ |
 | `src/entity/conversion_result.py` | Entity | FR-02 | PR1·PR3 | ✅ |
-| `src/formatter.py` | Domain | FR-03, FR-05 | PR4 | ⬜ |
-| `src/validator.py` | Boundary | FR-06~12 | PR5 | ⬜ |
-| `config/units.json` | — | EXT-01 | PR7 | ⬜ |
+| `src/formatter.py` | Domain | FR-03, FR-05 | PR5 | ✅ |
+| `src/validator.py` | Boundary | FR-06~12 | PR7 | 🟡 (FR-06·07) |
+| `config/units.json` | — | EXT-01 | PR9 | ⬜ |
 
 ---
 
