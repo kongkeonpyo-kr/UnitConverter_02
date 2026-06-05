@@ -128,11 +128,10 @@ def test_u_fr09_unknown_unit():
     expected_msg = "Unknown unit: cubit"
 
     # Act (GREEN)
-    # from src.validator import validate_input
-    # with pytest.raises(ValidationError, match=expected_msg):
-    #     validate_input(input_str)
+    from src.validator import ValidationError, validate_input
 
-    pytest.fail(f"RED: FR-09 GREEN 미구현 — Given {input_str!r}, Then {expected_msg!r}")
+    with pytest.raises(ValidationError, match=re.escape(expected_msg)):
+        validate_input(input_str)
 
 
 # ---------------------------------------------------------------------------
