@@ -1,0 +1,56 @@
+# Unit Converter — Cursor Rules (초안)
+
+## 도메인 (README.md 기준)
+
+- 길이 단위 변환 CLI: 입력 `단위:값`(예 `meter:2.5`) → 다른 모든 단위로 변환 출력.
+- 초기 단위: meter(기준), feet, yard. 비율은 meter 단일 SSOT에서 파생.
+- 비율: `1 meter = 3.28084 feet`, `1 meter = 1.09361 yard`.
+- OCP·SRP 준수. 단위 추가 시 기존 변환 핵심 코드 수정 최소화.
+- 입력 검증: 음수, 잘못된 형식, 미등록 단위 거부.
+- 확장(P1): 설정 외부화(JSON/YAML), 동적 단위 등록, 출력 포맷(JSON/CSV/표).
+- 상세 요구·추적표: `PRD/unit-converter-prd.md` 우선 참조.
+
+## 아키텍처 — ECB
+
+- **의존 방향:** boundary → control → entity (단방향).
+- **entity:** 순수 도메인(변환·비율·단위 규칙). `entity → boundary|control` import **금지**.
+- **control:** 유스케이스 조율(파싱 결과 → 변환 → 포맷). entity만 의존.
+- **boundary:** CLI·I/O·입력 검증·출력. control/entity 호출만; 도메인 규칙 중복 금지.
+
+## Dual-Track 테스트
+
+| Track | Layer | Mock | Test ID | 파일명 |
+|-------|-------|------|---------|--------|
+| **Logic** | entity, control | **Domain Mock 금지** — 실제 객체만 | `D-*` | `test_d_*.py` |
+| **UI** | boundary | **Mock 허용** (stdin/stdout, CLI) | `U-*` | `test_u_*.py` |
+
+- Logic Track: 변환 정확도·Registry·파생 비율 등 I/O 없이 검증.
+- UI Track: 파싱·검증 메시지·exit code·포맷 출력 등 경계 검증.
+
+## TDD 규칙
+
+- **RED → GREEN → REFACTOR** 순서 엄수. GREEN 전 REFACTOR 금지.
+- **assert 완화·`pytest.skip`·`xfail` 금지** — 실패는 구현으로 해결.
+- TC는 PRD Req ID(FR/NFR/EXT)와 1:1 추적. Given/Then 명시.
+- **MagicConstant SSOT:** `3.28084`, `1.09361` 등 변환 상수는 설정/Registry 한 곳만.
+  코드 전역 리터럴 산재 금지. 테스트도 SSOT 또는 PRD 명시값 참조.
+
+## AI 행동 규칙
+
+- **응답·커밋 메시지:** 한국어.
+- TDD 작업 시 매 응답 상단에 선언: `Phase`(RED/GREEN/REFACTOR), `Layer`(entity/control/boundary), `Track`(Logic/UI).
+- 구현 전 실패 TC부터. 요청 범위 밖 파일·기능 추가 금지.
+- **`git commit` / `push`:** 사용자가 명시 요청할 때만 수행.
+- PRD·README와 충돌 시 PRD v1.2 Track A/B 정의 우선, 단 ECB·Dual-Track naming은 본 rules 우선.
+
+## 디렉터리 가이드 (목표)
+
+```
+entity/      # 변환·단위·비율 (순수)
+control/     # 유스케이스
+boundary/    # CLI, parser, validator, formatter I/O
+tests/
+  test_d_*.py   # Logic (D-*)
+  test_u_*.py   # UI (U-*)
+config/units.json
+```
