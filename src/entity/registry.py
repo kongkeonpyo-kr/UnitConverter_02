@@ -1,0 +1,50 @@
+from src.entity.constants import BASE_UNIT, FEET_PER_METER, YARD_PER_METER
+
+
+class UnitRegistry:
+    """기준 단위(meter) 대비 비율 등록·조회 — OCP 확장 지점."""
+
+    def __init__(self, units: dict[str, float]) -> None:
+        self._units = dict(units)
+
+    @classmethod
+    def default(cls) -> "UnitRegistry":
+        from src.config_loader import default_config_path, load_unit_registry
+
+        path = default_config_path()
+        if path.exists():
+            return load_unit_registry(path)
+        return cls(
+            {
+                BASE_UNIT: 1.0,
+                "feet": FEET_PER_METER,
+                "yard": YARD_PER_METER,
+            }
+        )
+
+    def units(self) -> list[str]:
+        return list(self._units.keys())
+
+    def resolve_unit(self, unit: str) -> str | None:
+        if unit in self._units:
+            return unit
+        lower = unit.lower()
+        for key in self._units:
+            if key.lower() == lower:
+                return key
+        return None
+
+    def has_unit(self, unit: str) -> bool:
+        return self.resolve_unit(unit) is not None
+
+    def to_base(self, unit: str, value: float) -> float:
+        if unit not in self._units:
+            raise ValueError(f"Unknown unit: {unit}")
+        if unit == BASE_UNIT:
+            return value
+        return value / self._units[unit]
+
+    def from_base(self, unit: str, meter_value: float) -> float:
+        if unit not in self._units:
+            raise ValueError(f"Unknown unit: {unit}")
+        return meter_value * self._units[unit]
