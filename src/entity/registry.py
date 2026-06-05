@@ -20,8 +20,17 @@ class UnitRegistry:
     def units(self) -> list[str]:
         return list(self._units.keys())
 
+    def resolve_unit(self, unit: str) -> str | None:
+        if unit in self._units:
+            return unit
+        lower = unit.lower()
+        for key in self._units:
+            if key.lower() == lower:
+                return key
+        return None
+
     def has_unit(self, unit: str) -> bool:
-        return unit in self._units
+        return self.resolve_unit(unit) is not None
 
     def to_base(self, unit: str, value: float) -> float:
         if unit not in self._units:

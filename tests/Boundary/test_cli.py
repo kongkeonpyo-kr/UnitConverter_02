@@ -209,7 +209,7 @@ def test_u_fr12_case_insensitive_unit_accepted(input_str, expected_unit):
     from src.parser import parse_input
     from src.validator import validate_input
 
-    # Act (RED — 구현 전: 대소문자 변형 단위가 거부되거나 정규화되지 않음)
+    # Act (GREEN)
     validate_input(input_str)
 
     result = parse_input(input_str)
