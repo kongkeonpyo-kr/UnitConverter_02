@@ -2,8 +2,9 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | 1.2 |
+| 문서 버전 | 1.3 |
 | 작성일 | 2026-06-05 |
+| 변경 이력 | v1.3 — FR-12: 단위명 **대소문자 무시** (v1.2 소문자만 → 폐기) |
 | 기준 문서 | [README.md](../README.md) |
 | 레거시 코드 | [UnitConverter.py](../UnitConverter.py) |
 | 상태 | Draft |
@@ -129,7 +130,7 @@ CLI 경계에서 수신·거부·전달되는 **입력 처리 및 검증**.
 | FR-09 | A | 단위 | 등록된 단위만 허용 | `Unknown unit: {unit}` |
 | FR-10 | A | 빈 값 | unit 또는 value가 빈 문자열 | `Invalid format. Unit and value must not be empty` |
 | FR-11 | A | 공백 | unit/value 앞뒤 trim 후 처리 | — |
-| FR-12 | A | 대소문자 | 단위명은 **소문자만** 허용 (초기 MVP) | `Unknown unit: {unit}` |
+| FR-12 | A | 대소문자 | 등록 단위명은 **대소문자 구분 없이** 허용; 검증·파싱 후 Registry **표준 키(소문자)** 로 정규화 (`Meter` → `meter`) | — (미등록 단위는 FR-09와 동일하게 `Unknown unit: {unit}`) |
 
 ### 3.4 아키텍처 요구 (P0) — NFR-01 ~ NFR-03
 
@@ -267,7 +268,7 @@ PRD 구현 시 제거·리팩터링 대상 목록.
 | U1 | `8.2 feet` (반올림) | 전체 float | 소수 1자리 반올림 |
 | U2 | 다른 모든 단위 출력 | 소스 단위도 출력 | 소스 단위 제외 |
 | U3 | `yard` 단수 | `yard` | 단수 유지 |
-| U4 | `meter:2.5` | 동일 | trim 지원, 소문자만 |
+| U4 | `meter:2.5` | 동일 | trim 지원, 단위명 **대소문자 무시** (`Meter`/`METER` 허용) |
 
 ### 6.3 PRD에서 명시적으로 정의한 항목 (README 모호함 해소)
 
@@ -281,7 +282,7 @@ PRD 구현 시 제거·리팩터링 대상 목록.
 | P6 | 변환 정확도 | float, TC 허용 오차 1e-4 |
 | P7 | 초기 단위 | meter/feet/yard + 확장 |
 | P8 | 실행 방식 | CLI (`python UnitConverter.py`) |
-| P9 | 대소문자 | 소문자만 (MVP) |
+| P9 | 대소문자 | 단위명 **대소문자 무시**, 내부 표준 키는 소문자 (`meter`, `feet`, `yard`) |
 
 ---
 
@@ -293,6 +294,7 @@ PRD 구현 시 제거·리팩터링 대상 목록.
 - [ ] **Track B (Domain):** 반올림 규칙 적용 — 8.2 feet, 2.7 yard (FR-03)
 - [ ] **Track A (Boundary):** 잘못된 형식·숫자·음수·미지 단위 오류 메시지 (FR-06~09)
 - [ ] **Track A (Boundary):** `meter:2.5` 파싱 — unit=meter, value=2.5 (FR-01)
+- [ ] **Track A (Boundary):** 등록 단위명 대소문자 무시·소문자 정규화 (FR-12)
 - [ ] 새 단위 추가 시 Converter 핵심 로직 수정 없이 Registry만 확장 (NFR-01)
 - [ ] `tests/test_converter.py`: meter↔feet, meter↔yard, feet↔yard (TC-FR-02~05)
 - [ ] `tests/test_cli.py`: 입력 검증·파싱 (TC-FR-01, TC-FR-06~12)
@@ -343,7 +345,7 @@ PRD 요구사항(FR / NFR / EXT)과 테스트 케이스(Test ID)를 **1:1**로 �
 | FR-09 | A | TC-FR-09 | 미지 단위 | `cubit:1` (미등록) | `Unknown unit: cubit` | P0 | `tests/test_cli.py` |
 | FR-10 | A | TC-FR-10 | 빈 unit/value | `":2.5"` 또는 `"meter:"` | empty format 오류 | P0 | `tests/test_cli.py` |
 | FR-11 | A | TC-FR-11 | 공백 trim | `" meter : 2.5 "` | `unit="meter"`, `value=2.5` | P0 | `tests/test_cli.py` |
-| FR-12 | A | TC-FR-12 | 대소문자 거부 | `Meter:2.5` | `Unknown unit: Meter` | P0 | `tests/test_cli.py` |
+| FR-12 | A | TC-FR-12 | 대소문자 무시 | `Meter:2.5`, `METER:1`, `Feet:1`, `YARD:1` | 검증 통과; 파싱 unit=`meter`/`feet`/`yard` (정규화) | P0 | `tests/test_cli.py` |
 
 ### 8.3 NFR — 비기능·아키텍처 요구 (§3.4, §4)
 
@@ -419,7 +421,6 @@ PRD 요구사항(FR / NFR / EXT)과 테스트 케이스(Test ID)를 **1:1**로 �
 - 길이 외 단위(무게, 온도 등)
 - 동적 등록 단위의 파일 영속 저장
 - 다국어 오류 메시지
-- 대소문자 무시 단위명
 
 ---
 

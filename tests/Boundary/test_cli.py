@@ -190,18 +190,27 @@ def test_u_fr11_whitespace_trim():
 # Test ID : U-FR-12 / TC-FR-12
 # Layer   : boundary
 # P       : P0
-# Given   : Meter:2.5
-# Then    : Unknown unit: Meter
+# Given   : Meter:2.5, METER:1, Feet:1, YARD:1
+# Then    : 검증 통과, unit은 Registry 표준 키(소문자)로 정규화
 # ---------------------------------------------------------------------------
 @pytest.mark.req("FR-12")
 @pytest.mark.track("UI")
-def test_u_fr12_case_sensitive_unit_rejected():
-    """U-FR-12 / TC-FR-12: 대소문자 거부 — FR-12 (UI Track)"""
-    input_str = "Meter:2.5"
-    expected_msg = "Unknown unit: Meter"
+@pytest.mark.parametrize(
+    "input_str,expected_unit",
+    [
+        ("Meter:2.5", "meter"),
+        ("METER:2.5", "meter"),
+        ("Feet:1", "feet"),
+        ("YARD:1", "yard"),
+    ],
+)
+def test_u_fr12_case_insensitive_unit_accepted(input_str, expected_unit):
+    """U-FR-12 / TC-FR-12: 대소문자 무시 — FR-12 (UI Track)"""
+    from src.parser import parse_input
+    from src.validator import validate_input
 
-    # Act (GREEN)
-    from src.validator import ValidationError, validate_input
+    # Act (RED — 구현 전: 대소문자 변형 단위가 거부되거나 정규화되지 않음)
+    validate_input(input_str)
 
-    with pytest.raises(ValidationError, match=re.escape(expected_msg)):
-        validate_input(input_str)
+    result = parse_input(input_str)
+    assert result.unit == expected_unit

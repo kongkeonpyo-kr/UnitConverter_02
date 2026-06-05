@@ -6,10 +6,10 @@
 - 새로운 단위를 추가할 때 기존 코드의 변경이 최소화되도록 설계한다.
 - 각 단위 변환 로직은 테스트 코드로 검증한다.
 
-### ToDo — TDD 진행 현황 (PRD v1.2 기준)
+### ToDo — TDD 진행 현황 (PRD v1.3 기준)
 
 > 상세 요구·추적표: [PRD/unit-converter-prd.md](PRD/unit-converter-prd.md) §8  
-> 브랜치: **`REFACTORING`** | 기준: `GREEN` `97da13d` (P0 FR 12/12 GREEN)
+> 브랜치: **`REFACTORING`** | FR-12 요구 변경(v1.3): 단위명 **대소문자 무시** — TC RED 4건
 
 #### 완료 기준
 
@@ -24,7 +24,7 @@
 |-------|------------|---------|---------|------|
 | **RED** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | P0 FR RED 전체 완료 |
 | **GREEN** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | PR7 완료 (P0 FR 전체) |
-| **REFACTORING** | — | — | — | Golden Master + 구조 개선 (진행 중) |
+| **REFACTORING** | — | — | — | FR-12 재정의(v1.3) + Golden Master (진행 중) |
 
 #### GREEN PR 마일스톤
 
@@ -55,7 +55,7 @@
 | FR-09 | TC-FR-09 | 미지 단위 거부 | ✅ | ✅ | PR7 |
 | FR-10 | TC-FR-10 | 빈 unit/value | ✅ | ✅ | PR7 |
 | FR-11 | TC-FR-11 | 공백 trim | ✅ | ✅ | PR7 |
-| FR-12 | TC-FR-12 | 대소문자 거부 | ✅ | ✅ | PR7 |
+| FR-12 | TC-FR-12 | 대소문자 무시 (`Meter`/`METER`) | ✅ | ⬜ | REFACTORING |
 
 **Track B — Domain** (`tests/Domain/test_converter.py`)
 
@@ -115,7 +115,7 @@ python -m pytest tests/Boundary/test_cli.py::test_u_fr08_negative_value_rejected
 python -m pytest tests/Boundary/test_cli.py::test_u_fr09_unknown_unit -v
 python -m pytest tests/Boundary/test_cli.py::test_u_fr10_empty_unit_or_value -v
 python -m pytest tests/Boundary/test_cli.py::test_u_fr11_whitespace_trim -v
-python -m pytest tests/Boundary/test_cli.py::test_u_fr12_case_sensitive_unit_rejected -v
+python -m pytest tests/Boundary/test_cli.py::test_u_fr12_case_insensitive_unit_accepted -v
 
 # GREEN 통과 TC — Domain
 python -m pytest tests/Domain/test_converter.py -v
@@ -130,7 +130,7 @@ python -m pytest tests/GoldenMaster/test_golden_master.py -v
 python scripts/generate_golden_master.py
 ```
 
-**현재 TC 결과:** 22 collected — **22 passed** (P0 FR 13 + Golden Master 9)
+**현재 TC 결과:** 25 collected — **21 passed**, **4 failed** (FR-12 RED ×4; Golden Master 9건 포함)
 
 > Golden Master 기준 출력: `golden_master/expected/*.txt` (`cli.run()` REFACTORING 전 스냅샷)
 
