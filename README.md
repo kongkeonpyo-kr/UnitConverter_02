@@ -9,7 +9,7 @@
 ### ToDo — TDD 진행 현황 (PRD v1.2 기준)
 
 > 상세 요구·추적표: [PRD/unit-converter-prd.md](PRD/unit-converter-prd.md) §8  
-> 브랜치: `GREEN` | PR7 (Boundary FR-06~12 · P0 FR **12/12 GREEN**)
+> 브랜치: **`REFACTORING`** | 기준: `GREEN` `97da13d` (P0 FR 12/12 GREEN)
 
 #### 완료 기준
 
@@ -24,6 +24,7 @@
 |-------|------------|---------|---------|------|
 | **RED** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | P0 FR RED 전체 완료 |
 | **GREEN** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | PR7 완료 (P0 FR 전체) |
+| **REFACTORING** | — | — | — | Golden Master + 구조 개선 (진행 중) |
 
 #### GREEN PR 마일스톤
 
@@ -34,7 +35,8 @@
 | **PR3** | `f78949a` | `src/entity/` SSOT, re-export shim, import 정리 | ✅ |
 | **PR4** | — | FR-04 TC GREEN (Domain, Report 05) | ✅ |
 | **PR5** | `1b83ce0` | FR-03 Formatter + FR-03~05 Domain GREEN | ✅ |
-| **PR7** | `359e161` | FR-06~12 Validator + FR-11 Parser trim | ✅ |
+| **PR7** | `97da13d` | FR-06~12 Validator + FR-11 Parser trim | ✅ |
+| **REFACTORING** | — | Golden Master, `cli`↔`validator` 연동 등 | 🟡 |
 | **PR8** | — | NFR P0 TC + 구현 | ⬜ |
 | **PR9** | — | EXT P1 (설정·동적등록·출력포맷) | ⬜ |
 
@@ -120,9 +122,17 @@ python -m pytest tests/Domain/test_converter.py -v
 
 # Boundary 전체 GREEN
 python -m pytest tests/Boundary/test_cli.py -v
+
+# Golden Master (cli.run stdout 스냅샷)
+python -m pytest tests/GoldenMaster/test_golden_master.py -v
+
+# Golden Master 기준 파일 재생성 (의도적 변경 후)
+python scripts/generate_golden_master.py
 ```
 
-**현재 TC 결과:** 13 collected — **13 passed** (P0 FR 전체 GREEN)
+**현재 TC 결과:** 22 collected — **22 passed** (P0 FR 13 + Golden Master 9)
+
+> Golden Master 기준 출력: `golden_master/expected/*.txt` (`cli.run()` REFACTORING 전 스냅샷)
 
 ---
 
@@ -140,6 +150,15 @@ python -m pytest tests/Boundary/test_cli.py -v
 | `src/formatter.py` | Domain | FR-03, FR-05 | PR5 | ✅ |
 | `src/validator.py` | Boundary | FR-06~12 | PR7 | ✅ |
 | `config/units.json` | — | EXT-01 | PR9 | ⬜ |
+
+#### Golden Master (`REFACTORING`)
+
+| 경로 | 역할 |
+|------|------|
+| `golden_master/cases.json` | 스냅샷 입력 케이스 (9건) |
+| `golden_master/expected/*.txt` | `cli.run()` 기준 stdout |
+| `scripts/generate_golden_master.py` | expected 재생성 |
+| `tests/GoldenMaster/test_golden_master.py` | 회귀 비교 TC |
 
 ---
 
