@@ -1,7 +1,3 @@
-from dataclasses import dataclass
+from src.entity.conversion_result import ConversionResult
 
-
-@dataclass(frozen=True)
-class ConversionResult:
-    unit: str
-    value: float
+__all__ = ["ConversionResult"]

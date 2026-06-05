@@ -1,6 +1,6 @@
 from src.converter import Converter
+from src.entity.registry import UnitRegistry
 from src.parser import parse_input
-from src.registry import UnitRegistry
 
 _PROMPT = "Insert value for converting (ex: meter:2.5): "
 _FORMAT_ERROR = "Invalid format. Use unit:value (ex: meter:2.5)"

@@ -1,5 +1,5 @@
-from src.conversion_result import ConversionResult
-from src.registry import UnitRegistry
+from src.entity.conversion_result import ConversionResult
+from src.entity.registry import UnitRegistry
 
 
 class Converter:

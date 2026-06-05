@@ -1,5 +1,3 @@
-"""변환 상수 SSOT."""
+from src.entity.constants import BASE_UNIT, FEET_PER_METER, YARD_PER_METER
 
-BASE_UNIT = "meter"
-FEET_PER_METER = 3.28084
-YARD_PER_METER = 1.09361
+__all__ = ["BASE_UNIT", "FEET_PER_METER", "YARD_PER_METER"]

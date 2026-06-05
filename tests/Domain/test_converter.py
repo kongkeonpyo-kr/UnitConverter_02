@@ -25,7 +25,7 @@ import pytest
 def test_tc_fr_02_convert_all_units_excluding_source():
     """TC-FR-02: 전 단위 출력 — FR-02 (Track B)"""
     from src.converter import Converter
-    from src.registry import UnitRegistry
+    from src.entity.registry import UnitRegistry
 
     # Given
     registry = UnitRegistry.default()
@@ -100,7 +100,7 @@ def test_d_fr04_derived_conversion_via_meter():
 
     # Act (GREEN: Converter + Registry — meter hub 경유)
     # from src.converter import Converter
-    # from src.registry import UnitRegistry
+    # from src.entity.registry import UnitRegistry
     # registry = UnitRegistry.default()
     # converter = Converter(registry)
     # results = converter.convert(source_unit, value)
@@ -135,7 +135,7 @@ def test_d_fr05_unit_names_singular():
 
     # Act (GREEN: Formatter 또는 Converter 결과의 unit 필드)
     # from src.converter import Converter
-    # from src.registry import UnitRegistry
+    # from src.entity.registry import UnitRegistry
     # registry = UnitRegistry.default()
     # converter = Converter(registry)
     # results = converter.convert(source_unit, value)
