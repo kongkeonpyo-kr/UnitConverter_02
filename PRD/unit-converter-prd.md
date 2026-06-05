@@ -2,7 +2,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | 1.1 |
+| 문서 버전 | 1.2 |
 | 작성일 | 2026-06-05 |
 | 기준 문서 | [README.md](../README.md) |
 | 레거시 코드 | [UnitConverter.py](../UnitConverter.py) |
@@ -56,9 +56,26 @@
 
 ## 3. 기능 요구사항
 
-### 3.1 기본 변환 (P0) — FR-01 ~ FR-05
+### 3.1 FR Track 개요 — Domain vs Boundary
 
-**입력 형식:** `{unit}:{value}` (예: `meter:2.5`)
+FR(기능 요구)은 **헥사고날 / 클린 아키텍처** 관점에서 두 Track으로 구분한다.
+
+| Track | 명칭 | 범위 | 대표 모듈 | Test File |
+|-------|------|------|-----------|-----------|
+| **Track B** | **Domain** | 단위 변환·반올림·표기 등 **핵심 비즈니스 규칙** | `converter.py`, `formatter.py`, `registry.py` | `tests/test_converter.py` |
+| **Track A** | **Boundary** | CLI 입출력·입력 파싱·검증·오류 응답 등 **시스템 경계** | `cli.py`, `parser.py`, `validator.py` | `tests/test_cli.py` |
+
+```
+[Track A: Boundary]          [Track B: Domain]
+  test_cli.py                   test_converter.py
+       │                              │
+  FR-01 파싱 ──────────────────► FR-02 변환
+  FR-06~12 검증                    FR-03 반올림
+       │                           FR-04 파생 변환
+  CLI 입출력·exit code              FR-05 단위 표기
+```
+
+**공통 입력 형식:** `{unit}:{value}` (예: `meter:2.5`)
 
 **초기 지원 단위:**
 
@@ -68,7 +85,7 @@
 | feet | 1 meter = 3.28084 feet |
 | yard | 1 meter = 1.09361 yard |
 
-**비즈니스 규칙:**
+**비즈니스 규칙 (Domain):**
 
 - feet/yard 간 비율은 meter를 기준으로 파생 계산한다.
 - 변환 비율은 단일 소스(기준 단위 + 설정)에서 관리한다.
@@ -80,33 +97,41 @@
 2.5 meter = 2.7 yard
 ```
 
-**출력 정책 (PRD 정의):**
+### 3.2 Track B — Domain (P0) — FR-02 ~ FR-05
 
-| ID | 요구 | 설명 |
-|----|------|------|
-| FR-01 | 입력 파싱 | `unit:value` 문자열을 unit, value로 분리 |
-| FR-02 | 전 단위 변환 출력 | 등록된 모든 단위로 변환 (소스 단위 제외) |
-| FR-03 | 소수 1자리 반올림 | round half up, 예: 8.2 feet, 2.7 yard |
-| FR-04 | meter 기준 파생 변환 | feet↔yard 등 비 meter 단위 간 변환도 meter 경유 |
-| FR-05 | 단위 표기 | 단수형 `meter`, `feet`, `yard` |
+> **Test File:** `tests/test_converter.py`
+
+변환 엔진 내부에서 I/O 없이 검증 가능한 **도메인 규칙**.
+
+| ID | Track | 요구 | 설명 |
+|----|-------|------|------|
+| FR-02 | B | 전 단위 변환 출력 | 등록된 모든 단위로 변환 (소스 단위 제외) |
+| FR-03 | B | 소수 1자리 반올림 | round half up, 예: 8.2 feet, 2.7 yard |
+| FR-04 | B | meter 기준 파생 변환 | feet↔yard 등 비 meter 단위 간 변환도 meter 경유 |
+| FR-05 | B | 단위 표기 | 단수형 `meter`, `feet`, `yard` |
 
 - 소수점 표시: **소수 1자리**, 반올림(round half up)
 - **입력(소스) 단위는 출력에서 제외** — 다른 모든 단위만 표시
 - 단위 표기: README 예시와 동일하게 단수형 (`meter`, `feet`, `yard`)
 
-### 3.2 입력 검증 (P0) — FR-06 ~ FR-12
+### 3.3 Track A — Boundary (P0) — FR-01, FR-06 ~ FR-12
 
-| ID | 검증 항목 | 조건 | 오류 메시지 (예시) |
-|----|-----------|------|-------------------|
-| FR-06 | 형식 | `:` 구분자 필수 | `Invalid format. Use unit:value (ex: meter:2.5)` |
-| FR-07 | 숫자 | value는 float 변환 가능 | `Invalid number: {value_str}` |
-| FR-08 | 음수 | value < 0 거부 | `Negative values are not allowed: {value}` |
-| FR-09 | 단위 | 등록된 단위만 허용 | `Unknown unit: {unit}` |
-| FR-10 | 빈 값 | unit 또는 value가 빈 문자열 | `Invalid format. Unit and value must not be empty` |
-| FR-11 | 공백 | unit/value 앞뒤 trim 후 처리 | — |
-| FR-12 | 대소문자 | 단위명은 **소문자만** 허용 (초기 MVP) | `Unknown unit: {unit}` |
+> **Test File:** `tests/test_cli.py`
 
-### 3.3 아키텍처 요구 (P0) — NFR-01 ~ NFR-03
+CLI 경계에서 수신·거부·전달되는 **입력 처리 및 검증**.
+
+| ID | Track | 검증 항목 | 조건 | 오류 메시지 (예시) |
+|----|-------|-----------|------|-------------------|
+| FR-01 | A | 입력 파싱 | `unit:value` 문자열을 unit, value로 분리 | — |
+| FR-06 | A | 형식 | `:` 구분자 필수 | `Invalid format. Use unit:value (ex: meter:2.5)` |
+| FR-07 | A | 숫자 | value는 float 변환 가능 | `Invalid number: {value_str}` |
+| FR-08 | A | 음수 | value < 0 거부 | `Negative values are not allowed: {value}` |
+| FR-09 | A | 단위 | 등록된 단위만 허용 | `Unknown unit: {unit}` |
+| FR-10 | A | 빈 값 | unit 또는 value가 빈 문자열 | `Invalid format. Unit and value must not be empty` |
+| FR-11 | A | 공백 | unit/value 앞뒤 trim 후 처리 | — |
+| FR-12 | A | 대소문자 | 단위명은 **소문자만** 허용 (초기 MVP) | `Unknown unit: {unit}` |
+
+### 3.4 아키텍처 요구 (P0) — NFR-01 ~ NFR-03
 
 README 품질 요구를 PRD 수준으로 구체화한다.
 
@@ -120,22 +145,22 @@ README 품질 요구를 PRD 수준으로 구체화한다.
 
 ```
 src/
-  parser.py          # 입력 파싱
-  validator.py       # 입력 검증
-  registry.py        # 단위 등록·조회
-  converter.py       # 변환 로직
-  formatter.py       # 출력 포맷 (text/json/csv)
+  parser.py          # Track A — 입력 파싱
+  validator.py       # Track A — 입력 검증
+  cli.py             # Track A — CLI 진입점
+  registry.py        # Domain — 단위 등록·조회
+  converter.py       # Track B — 변환 로직
+  formatter.py       # Track B — 출력 포맷 (text/json/csv)
   config_loader.py   # 설정 파일 로드
-  cli.py             # CLI 진입점
 tests/
-  test_converter.py
-  test_validator.py
+  test_cli.py        # Track A — Boundary FR (FR-01, FR-06~12)
+  test_converter.py  # Track B — Domain FR (FR-02~05)
   ...
 config/
   units.json         # 기본 단위 비율
 ```
 
-### 3.4 설정 외부화 (P1) — EXT-01 ~ EXT-04
+### 3.5 설정 외부화 (P1) — EXT-01 ~ EXT-04
 
 | ID | 요구 | 설명 |
 |----|------|------|
@@ -164,7 +189,7 @@ config/
 - 설정 파일 누락 시: 내장 기본값 사용
 - 설정 파일 파싱 실패 시: 오류 메시지 출력 후 종료 (exit code 1)
 
-### 3.5 동적 단위 등록 (P1) — EXT-05 ~ EXT-06
+### 3.6 동적 단위 등록 (P1) — EXT-05 ~ EXT-06
 
 | ID | 요구 | 설명 |
 |----|------|------|
@@ -177,7 +202,7 @@ config/
 - 등록된 단위는 **현재 세션(프로세스) 동안만** 유효 (영속 저장은 Phase 2)
 - 등록 후 즉시 변환 대상 단위 목록에 포함
 
-### 3.6 출력 포맷 선택 (P1) — EXT-07 ~ EXT-09
+### 3.7 출력 포맷 선택 (P1) — EXT-07 ~ EXT-09
 
 | ID | 포맷 | 설명 | 선택 방법 |
 |----|------|------|-----------|
@@ -197,7 +222,7 @@ config/
 | NFR-07 | 검증 실패 시 exit code `1`, 정상 종료 `0` | §4 |
 | NFR-08 | `python UnitConverter.py` (또는 `python -m src.cli`) 로 실행 가능 | §4 |
 
-> **NFR-01 ~ NFR-03** (OCP, SRP, 테스트 가능성)은 §3.3 아키텍처 요구에 정의.
+> **NFR-01 ~ NFR-03** (OCP, SRP, 테스트 가능성)은 §3.4 아키텍처 요구에 정의.
 
 ---
 
@@ -226,14 +251,14 @@ PRD 구현 시 제거·리팩터링 대상 목록.
 
 | # | README 요구 | 레거시 상태 | PRD 보완 |
 |---|-------------|-------------|----------|
-| F1 | OCP 설계 | if/elif + 하드코딩 | §3.3 Registry/인터페이스 |
-| F2 | SRP 클래스 구성 | 단일 `main()` | §3.3 모듈 분리 |
-| F3 | 음수 입력 검증 | 없음 | §3.2 |
+| F1 | OCP 설계 | if/elif + 하드코딩 | §3.4 Registry/인터페이스 |
+| F2 | SRP 클래스 구성 | 단일 `main()` | §3.4 모듈 분리 |
+| F3 | 음수 입력 검증 | 없음 | §3.3 Track A |
 | F4 | 단위 변환 테스트 | 없음 | §7 수용 기준 |
-| F5 | 설정 외부화 | 하드코딩 | §3.4 |
-| F6 | 동적 단위 등록 | 없음 | §3.5 |
-| F7 | 출력 포맷 선택 | 고정 print | §3.6 |
-| F8 | meter 기반 파생 비율 | 상수 4곳 중복 | §3.1 base_unit 단일 정의 |
+| F5 | 설정 외부화 | 하드코딩 | §3.5 |
+| F6 | 동적 단위 등록 | 없음 | §3.6 |
+| F7 | 출력 포맷 선택 | 고정 print | §3.7 |
+| F8 | meter 기반 파생 비율 | 상수 4곳 중복 | §3.2 Track B |
 
 ### 6.2 동작/UX 갭
 
@@ -264,12 +289,13 @@ PRD 구현 시 제거·리팩터링 대상 목록.
 
 ### 7.1 P0 — MVP
 
-- [ ] `meter:2.5` 입력 시 feet, yard로 변환 결과 출력 (소스 meter 제외)
-- [ ] 출력 값이 README 예시와 동일한 반올림 규칙 적용 (8.2 feet, 2.7 yard)
-- [ ] 잘못된 형식, 숫자, 음수, 미지 단위에 대해 명확한 오류 메시지
-- [ ] 새 단위 추가 시 Converter 핵심 로직(if/elif) 수정 없이 Registry만 확장
-- [ ] pytest TC: meter↔feet, meter↔yard, feet↔yard 변환 정확도 검증
-- [ ] pytest TC: 입력 검증 케이스 (정상/형식오류/음수/미지단위)
+- [ ] **Track B (Domain):** `meter:2.5` → feet, yard 변환 (소스 meter 제외, FR-02)
+- [ ] **Track B (Domain):** 반올림 규칙 적용 — 8.2 feet, 2.7 yard (FR-03)
+- [ ] **Track A (Boundary):** 잘못된 형식·숫자·음수·미지 단위 오류 메시지 (FR-06~09)
+- [ ] **Track A (Boundary):** `meter:2.5` 파싱 — unit=meter, value=2.5 (FR-01)
+- [ ] 새 단위 추가 시 Converter 핵심 로직 수정 없이 Registry만 확장 (NFR-01)
+- [ ] `tests/test_converter.py`: meter↔feet, meter↔yard, feet↔yard (TC-FR-02~05)
+- [ ] `tests/test_cli.py`: 입력 검증·파싱 (TC-FR-01, TC-FR-06~12)
 
 ### 7.2 P1 — 추가 요구
 
@@ -290,28 +316,36 @@ PRD 요구사항(FR / NFR / EXT)과 테스트 케이스(Test ID)를 **1:1**로 �
 | 항목 | 규칙 |
 |------|------|
 | Req ID | FR(기능), NFR(비기능·아키텍처), EXT(확장/P1) |
+| Track | **A (Boundary)** → `test_cli.py` / **B (Domain)** → `test_converter.py` |
 | Test ID | `TC-{Req ID}` — 요구 1건당 테스트 1건 |
 | Given / Then | pytest Given-When-Then 또는 Arrange-Assert 형태로 구현 |
 | P | P0(MVP) / P1(추가 요구) |
 
-### 8.2 FR — 기능 요구 (§3.1, §3.2)
+### 8.2 FR — 기능 요구 (§3.2 Track B, §3.3 Track A)
 
-| Req ID | Test ID | 요구 | Given | Then | P | Test File |
-|--------|---------|------|-------|------|---|-----------|
-| FR-01 | TC-FR-01 | `meter:2.5` 파싱 | 유효 문자열 `"meter:2.5"` | `unit="meter"`, `value=2.5` | P0 | `tests/test_parser.py` |
-| FR-02 | TC-FR-02 | 전 단위 출력 | `meter:2.5`, 기본 Registry | feet·yard 변환 결과 반환, **meter 제외** | P0 | `tests/test_converter.py` |
-| FR-03 | TC-FR-03 | 소수 1자리 반올림 | `meter:2.5`, `--format table` | 출력 `"8.2 feet"`, `"2.7 yard"` | P0 | `tests/test_formatter.py` |
-| FR-04 | TC-FR-04 | meter 기준 파생 변환 | `feet:3.28084` | `yard ≈ 1.0` (meter 경유) | P0 | `tests/test_converter.py` |
-| FR-05 | TC-FR-05 | 단위 표기 (단수) | `meter:1` | 출력 단위명 `feet`, `yard` (복수형 아님) | P0 | `tests/test_formatter.py` |
-| FR-06 | TC-FR-06 | 잘못된 형식 | `"meter"` (콜론 없음) | 형식 오류 메시지, 예외 또는 exit 1 | P0 | `tests/test_validator.py` |
-| FR-07 | TC-FR-07 | 잘못된 숫자 | `meter:abc` | `Invalid number: abc` | P0 | `tests/test_validator.py` |
-| FR-08 | TC-FR-08 | 음수 거부 | `meter:-1` | `Negative values are not allowed`, 거부 | P0 | `tests/test_validator.py` |
-| FR-09 | TC-FR-09 | 미지 단위 | `cubit:1` (미등록) | `Unknown unit: cubit` | P0 | `tests/test_validator.py` |
-| FR-10 | TC-FR-10 | 빈 unit/value | `":2.5"` 또는 `"meter:"` | empty format 오류 | P0 | `tests/test_validator.py` |
-| FR-11 | TC-FR-11 | 공백 trim | `" meter : 2.5 "` | `unit="meter"`, `value=2.5` | P0 | `tests/test_parser.py` |
-| FR-12 | TC-FR-12 | 대소문자 거부 | `Meter:2.5` | `Unknown unit: Meter` | P0 | `tests/test_validator.py` |
+#### Track B — Domain (`tests/test_converter.py`)
 
-### 8.3 NFR — 비기능·아키텍처 요구 (§3.3, §4)
+| Req ID | Track | Test ID | 요구 | Given | Then | P | Test File |
+|--------|-------|---------|------|-------|------|---|-----------|
+| FR-02 | B | TC-FR-02 | 전 단위 출력 | `meter:2.5`, 기본 Registry | feet·yard 변환 결과 반환, **meter 제외** | P0 | `tests/test_converter.py` |
+| FR-03 | B | TC-FR-03 | 소수 1자리 반올림 | `meter:2.5` | `"8.2 feet"`, `"2.7 yard"` | P0 | `tests/test_converter.py` |
+| FR-04 | B | TC-FR-04 | meter 기준 파생 변환 | `feet:3.28084` | `yard ≈ 1.0` (meter 경유) | P0 | `tests/test_converter.py` |
+| FR-05 | B | TC-FR-05 | 단위 표기 (단수) | `meter:1` | 출력 단위명 `feet`, `yard` (복수형 아님) | P0 | `tests/test_converter.py` |
+
+#### Track A — Boundary (`tests/test_cli.py`)
+
+| Req ID | Track | Test ID | 요구 | Given | Then | P | Test File |
+|--------|-------|---------|------|-------|------|---|-----------|
+| FR-01 | A | TC-FR-01 | `meter:2.5` 파싱 | 유효 문자열 `"meter:2.5"` | `unit="meter"`, `value=2.5` | P0 | `tests/test_cli.py` |
+| FR-06 | A | TC-FR-06 | 잘못된 형식 | `"meter"` (콜론 없음) | 형식 오류 메시지, 예외 또는 exit 1 | P0 | `tests/test_cli.py` |
+| FR-07 | A | TC-FR-07 | 잘못된 숫자 | `meter:abc` | `Invalid number: abc` | P0 | `tests/test_cli.py` |
+| FR-08 | A | TC-FR-08 | 음수 거부 | `meter:-1` | `Negative values are not allowed`, 거부 | P0 | `tests/test_cli.py` |
+| FR-09 | A | TC-FR-09 | 미지 단위 | `cubit:1` (미등록) | `Unknown unit: cubit` | P0 | `tests/test_cli.py` |
+| FR-10 | A | TC-FR-10 | 빈 unit/value | `":2.5"` 또는 `"meter:"` | empty format 오류 | P0 | `tests/test_cli.py` |
+| FR-11 | A | TC-FR-11 | 공백 trim | `" meter : 2.5 "` | `unit="meter"`, `value=2.5` | P0 | `tests/test_cli.py` |
+| FR-12 | A | TC-FR-12 | 대소문자 거부 | `Meter:2.5` | `Unknown unit: Meter` | P0 | `tests/test_cli.py` |
+
+### 8.3 NFR — 비기능·아키텍처 요구 (§3.4, §4)
 
 | Req ID | Test ID | 요구 | Given | Then | P | Test File |
 |--------|---------|------|-------|------|---|-----------|
@@ -324,7 +358,7 @@ PRD 요구사항(FR / NFR / EXT)과 테스트 케이스(Test ID)를 **1:1**로 �
 | NFR-07 | TC-NFR-07 | exit code | 검증 실패 / 정상 입력 | 실패 `exit 1`, 성공 `exit 0` | P0 | `tests/test_cli.py` |
 | NFR-08 | TC-NFR-08 | CLI 실행 | `python UnitConverter.py` + 입력 | 정상 변환 출력 | P0 | `tests/test_cli.py` |
 
-### 8.4 EXT — 확장 요구 (§3.4 ~ §3.6)
+### 8.4 EXT — 확장 요구 (§3.5 ~ §3.7)
 
 | Req ID | Test ID | 요구 | Given | Then | P | Test File |
 |--------|---------|------|-------|------|---|-----------|
@@ -334,31 +368,35 @@ PRD 요구사항(FR / NFR / EXT)과 테스트 케이스(Test ID)를 **1:1**로 �
 | EXT-04 | TC-EXT-04 | `--config` 옵션 | `custom_units.json` | 지정 파일 비율 로드 | P1 | `tests/test_config_loader.py` |
 | EXT-05 | TC-EXT-05 | 동적 등록 | `--register "cubit:0.4572"` | Registry에 cubit 등록 | P1 | `tests/test_registry.py` |
 | EXT-06 | TC-EXT-06 | 등록 후 즉시 변환 | cubit 등록 후 `cubit:1` | meter 등 다른 단위로 변환 가능 | P1 | `tests/test_registry.py` |
-| EXT-07 | TC-EXT-07 | table 포맷 | `--format table`, `meter:2.5` | 텍스트 줄 출력 | P1 | `tests/test_formatter.py` |
-| EXT-08 | TC-EXT-08 | json 포맷 | `--format json` | 유효 JSON 배열 | P1 | `tests/test_formatter.py` |
-| EXT-09 | TC-EXT-09 | csv 포맷 | `--format csv` | 헤더 + 행 CSV | P1 | `tests/test_formatter.py` |
+| EXT-07 | TC-EXT-07 | table 포맷 | `--format table`, `meter:2.5` | 텍스트 줄 출력 | P1 | `tests/test_cli.py` |
+| EXT-08 | TC-EXT-08 | json 포맷 | `--format json` | 유효 JSON 배열 | P1 | `tests/test_cli.py` |
+| EXT-09 | TC-EXT-09 | csv 포맷 | `--format csv` | 헤더 + 행 CSV | P1 | `tests/test_cli.py` |
 
 ### 8.5 요약 매트릭스 (Req ID ↔ Test ID 1:1)
 
-| 구분 | Req ID 범위 | Test ID 범위 | 건수 | 우선순위 |
-|------|-------------|--------------|------|----------|
-| FR | FR-01 ~ FR-12 | TC-FR-01 ~ TC-FR-12 | 12 | P0 |
-| NFR | NFR-01 ~ NFR-08 | TC-NFR-01 ~ TC-NFR-08 | 8 | P0/P1 |
-| EXT | EXT-01 ~ EXT-09 | TC-EXT-01 ~ TC-EXT-09 | 9 | P1 |
-| **합계** | — | — | **29** | — |
+| 구분 | Track | Req ID 범위 | Test ID 범위 | Test File | 건수 | 우선순위 |
+|------|-------|-------------|--------------|-----------|------|----------|
+| FR (Domain) | B | FR-02 ~ FR-05 | TC-FR-02 ~ TC-FR-05 | `test_converter.py` | 4 | P0 |
+| FR (Boundary) | A | FR-01, FR-06 ~ FR-12 | TC-FR-01, TC-FR-06 ~ TC-FR-12 | `test_cli.py` | 8 | P0 |
+| NFR | — | NFR-01 ~ NFR-08 | TC-NFR-01 ~ TC-NFR-08 | (§8.3 참조) | 8 | P0/P1 |
+| EXT | A/B | EXT-01 ~ EXT-09 | TC-EXT-01 ~ TC-EXT-09 | (§8.4 참조) | 9 | P1 |
+| **FR 합계** | — | FR-01 ~ FR-12 | TC-FR-01 ~ TC-FR-12 | — | **12** | P0 |
+| **전체 합계** | — | — | — | — | **29** | — |
 
-### 8.6 Test File → Req ID 역추적
+### 8.6 Test File → Req ID 역추적 (FR Track)
+
+| Test File | Track | 담당 FR / Test ID |
+|-----------|-------|-------------------|
+| `tests/test_converter.py` | **B (Domain)** | FR-02~05 → TC-FR-02~05, TC-NFR-03, TC-NFR-06 |
+| `tests/test_cli.py` | **A (Boundary)** | FR-01, FR-06~12 → TC-FR-01, TC-FR-06~12, TC-NFR-07, TC-NFR-08, TC-EXT-07~09 |
+
+### 8.7 Test File → Req ID 역추적 (NFR / EXT)
 
 | Test File | 담당 Test ID |
 |-----------|--------------|
-| `tests/test_parser.py` | TC-FR-01, TC-FR-11 |
-| `tests/test_validator.py` | TC-FR-06 ~ TC-FR-10, TC-FR-12 |
-| `tests/test_converter.py` | TC-FR-02, TC-FR-04, TC-NFR-03, TC-NFR-06 |
-| `tests/test_formatter.py` | TC-FR-03, TC-FR-05, TC-EXT-07 ~ TC-EXT-09 |
 | `tests/test_registry.py` | TC-NFR-01, TC-EXT-05, TC-EXT-06 |
 | `tests/test_structure.py` | TC-NFR-02 |
 | `tests/test_environment.py` | TC-NFR-04, TC-NFR-05 |
-| `tests/test_cli.py` | TC-NFR-07, TC-NFR-08 |
 | `tests/test_config_loader.py` | TC-EXT-01 ~ TC-EXT-04 |
 
 ---
@@ -368,9 +406,9 @@ PRD 요구사항(FR / NFR / EXT)과 테스트 케이스(Test ID)를 **1:1**로 �
 | Phase | 내용 | 예상 시간 | PRD 범위 |
 |-------|------|-----------|----------|
 | 1 | 문제 코드·요구사항 분석 | 0.5h | §5, §6 |
-| 2 | P0: OCP/SRP 리팩터, 입력 검증 | 2h | §3.1–3.3 |
-| 3 | P0: TC 작성 | 0.5h | §7.1, §8.2–8.3 |
-| 4 | P1: 설정·동적 등록·출력 포맷 + TC | 2h | §3.4–3.6, §7.2, §8.4 |
+| 2 | P0: OCP/SRP 리팩터, Track A/B 분리 | 2h | §3.2–3.4 |
+| 3 | P0: TC 작성 (test_cli / test_converter) | 0.5h | §7.1, §8.2–8.3 |
+| 4 | P1: 설정·동적 등록·출력 포맷 + TC | 2h | §3.5–3.7, §7.2, §8.4 |
 | 5 | 회고·발표 | 1h | — |
 
 ---
