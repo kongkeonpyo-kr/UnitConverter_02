@@ -9,10 +9,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+import src.config_loader as config_loader
 from src.cli import run
 
 CASES = ROOT / "golden_master" / "cases.json"
 OUT_DIR = ROOT / "golden_master" / "expected"
+# Golden baseline = TC fixture (사용자 config/units.json 과 무관)
+FIXTURE_UNITS_PATH = ROOT / "tests" / "fixtures" / "units.json"
 
 
 def capture(input_str: str) -> str:
@@ -23,6 +26,7 @@ def capture(input_str: str) -> str:
 
 
 def main() -> None:
+    config_loader.default_config_path = lambda: FIXTURE_UNITS_PATH
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     cases = json.loads(CASES.read_text(encoding="utf-8"))
     for case in cases:

@@ -9,6 +9,11 @@ class UnitRegistry:
 
     @classmethod
     def default(cls) -> "UnitRegistry":
+        from src.config_loader import default_config_path, load_unit_registry
+
+        path = default_config_path()
+        if path.exists():
+            return load_unit_registry(path)
         return cls(
             {
                 BASE_UNIT: 1.0,
