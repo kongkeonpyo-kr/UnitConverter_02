@@ -237,3 +237,24 @@ deactivate
    - AI를 어떻게 활용했나? 도움이 된 순간과 한계는?
    - TC를 추가해보면서 개선에 미친 영향, TC 작성 팁
    - 클린코드와 리팩토링에서 느낀 장점과 어려운점
+  
+   - {
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer "
+      }
+    }
+  }
+
+}
