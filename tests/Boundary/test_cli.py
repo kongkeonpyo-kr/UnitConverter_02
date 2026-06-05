@@ -175,17 +175,13 @@ def test_u_fr11_whitespace_trim():
     expected_value = 2.5
 
     # Act (GREEN)
-    # from src.parser import parse_input
-    # result = parse_input(input_str)
+    from src.parser import parse_input
 
-    # Assert (GREEN 시 활성화)
-    # assert result.unit == expected_unit
-    # assert result.value == expected_value
+    result = parse_input(input_str)
 
-    pytest.fail(
-        f"RED: FR-11 GREEN 미구현 — Given {input_str!r}, "
-        f"Then unit={expected_unit!r}, value={expected_value}"
-    )
+    # Assert (GREEN)
+    assert result.unit == expected_unit
+    assert result.value == expected_value
 
 
 # ---------------------------------------------------------------------------

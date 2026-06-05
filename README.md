@@ -9,7 +9,7 @@
 ### ToDo — TDD 진행 현황 (PRD v1.2 기준)
 
 > 상세 요구·추적표: [PRD/unit-converter-prd.md](PRD/unit-converter-prd.md) §8  
-> 브랜치: `GREEN` | PR7 (Validator FR-06~10 GREEN)
+> 브랜치: `GREEN` | PR7 (Validator FR-06~11 GREEN)
 
 #### 완료 기준
 
@@ -23,7 +23,7 @@
 | Phase | P0 FR (12) | NFR (8) | EXT (9) | 비고 |
 |-------|------------|---------|---------|------|
 | **RED** | ✅ 12/12 | ⬜ 0/8 | ⬜ 0/9 | P0 FR RED 전체 완료 |
-| **GREEN** | ✅ 10/12 | ⬜ 0/8 | ⬜ 0/9 | PR7 (FR-01~10) |
+| **GREEN** | ✅ 11/12 | ⬜ 0/8 | ⬜ 0/9 | PR7 (FR-01~11) |
 
 #### GREEN PR 마일스톤
 
@@ -34,7 +34,7 @@
 | **PR3** | `f78949a` | `src/entity/` SSOT, re-export shim, import 정리 | ✅ |
 | **PR4** | — | FR-04 TC GREEN (Domain, Report 05) | ✅ |
 | **PR5** | `1b83ce0` | FR-03 Formatter + FR-03~05 Domain GREEN | ✅ |
-| **PR7** | `6611cb1` | FR-06~10 Validator, FR-11~12 잔여 | 🟡 |
+| **PR7** | `7ce6da6` | FR-06~11 (Validator + Parser trim), FR-12 잔여 | 🟡 |
 | **PR8** | — | NFR P0 TC + 구현 | ⬜ |
 | **PR9** | — | EXT P1 (설정·동적등록·출력포맷) | ⬜ |
 
@@ -52,7 +52,7 @@
 | FR-08 | TC-FR-08 | 음수 거부 | ✅ | ✅ | PR7 |
 | FR-09 | TC-FR-09 | 미지 단위 거부 | ✅ | ✅ | PR7 |
 | FR-10 | TC-FR-10 | 빈 unit/value | ✅ | ✅ | PR7 |
-| FR-11 | TC-FR-11 | 공백 trim | ✅ | ⬜ | PR7 |
+| FR-11 | TC-FR-11 | 공백 trim | ✅ | ✅ | PR7 |
 | FR-12 | TC-FR-12 | 대소문자 거부 | ✅ | ⬜ | PR7 |
 
 **Track B — Domain** (`tests/Domain/test_converter.py`)
@@ -112,12 +112,13 @@ python -m pytest tests/Boundary/test_cli.py::test_u_fr07_invalid_number -v
 python -m pytest tests/Boundary/test_cli.py::test_u_fr08_negative_value_rejected -v
 python -m pytest tests/Boundary/test_cli.py::test_u_fr09_unknown_unit -v
 python -m pytest tests/Boundary/test_cli.py::test_u_fr10_empty_unit_or_value -v
+python -m pytest tests/Boundary/test_cli.py::test_u_fr11_whitespace_trim -v
 
 # GREEN 통과 TC — Domain
 python -m pytest tests/Domain/test_converter.py -v
 ```
 
-**현재 TC 결과:** 13 collected — **11 passed**, 2 failed (FR-11~12 RED)
+**현재 TC 결과:** 13 collected — **12 passed**, 1 failed (FR-12 RED)
 
 ---
 
@@ -125,7 +126,7 @@ python -m pytest tests/Domain/test_converter.py -v
 
 | 모듈 | Layer | FR/NFR | PR | 상태 |
 |------|-------|--------|-----|------|
-| `src/parser.py` | Boundary | FR-01 | PR1 | ✅ |
+| `src/parser.py` | Boundary | FR-01, FR-11 | PR1·PR7 | ✅ |
 | `src/parsed_input.py` | Boundary | FR-01 | PR1 | ✅ |
 | `src/cli.py` | Boundary | NFR-03, NFR-08 | PR1 | 🟡 |
 | `src/converter.py` | Domain | FR-02 | PR1 | ✅ |
