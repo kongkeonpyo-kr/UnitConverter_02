@@ -151,14 +151,10 @@ def test_u_fr10_empty_unit_or_value(input_str):
     expected_fragment = "Unit and value must not be empty"
 
     # Act (GREEN)
-    # from src.validator import validate_input
-    # with pytest.raises(ValidationError, match=expected_fragment):
-    #     validate_input(input_str)
+    from src.validator import ValidationError, validate_input
 
-    pytest.fail(
-        f"RED: FR-10 GREEN 미구현 — Given {input_str!r}, "
-        f"Then {expected_fragment!r}"
-    )
+    with pytest.raises(ValidationError, match=re.escape(expected_fragment)):
+        validate_input(input_str)
 
 
 # ---------------------------------------------------------------------------
